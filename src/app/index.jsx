@@ -1,12 +1,43 @@
-import React from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, ScrollView, useColorScheme  } from "react-native";
 import Header  from "@/components/header";
 import Navbar from "@/components/navbar";
 import HorizontalList from "@/components/horizontalList"
 import ServiceCard from "@/components/serviceCard"
 import BarberCard from "@/components/barberCard"
 
+const themes = {
+    light: {
+        background: "#F0F0F0",
+        title: "#000000",
+        text: "#000000",
+        promoCard: "#000000",
+        titlePromo: "#FACC15",
+        subtitlePromo: "#FACC15"
+    },
+    dark: {
+        background: "#111827",
+        title: "#ffffff",
+        text: "#ffffff",
+        promoCard: "#FACC15",
+        titlePromo: "#000000",
+        subtitlePromo: "#000000"
+    }
+}
+
 export default function Index() {
+
+    const colorScheme = useColorScheme()
+    const [theme, setTheme] = useState(themes.light)
+    
+    useEffect(() => {
+        setTheme(colorScheme === "dark" ? themes.dark : themes.light)
+    }, [colorScheme])
+    
+    const [serviceSelected, setServiceSelected] = useState(null)
+    useEffect(() => {
+        console.log("Serviço selecionado:", serviceSelected);
+    }, [serviceSelected])
 
     const servicos = [
         {id: "1", title: "Combo Corte + Barba", price: "R$ 50", time: "20 min"},
@@ -24,26 +55,29 @@ export default function Index() {
     ]
 
     return (
-        <View style={{flex: 1, backgroundColor: "#f0f0f0"}}>
+        <View style={[styles.wrapper, {backgroundColor: theme.background}]}>
             <Header />
-            <ScrollView>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
                 <View style={styles.container}>
                     
-                    <View style = {styles.promoCard}>
-                        <Text style={styles.titlePromo}>Promoção da Semana!</Text>
-                        <Text style = {styles.subtitlePromo}>✂️ Corte + Barba ✂️</Text>
-                        <Text style = {styles.subtitlePromo}>Por apenas R$ 50,00!</Text>
+                    <View style = {[styles.promoCard, {backgroundColor: theme.promoCard}]}>
+
+                        <Text style={[styles.titlePromo, {color: theme.titlePromo}]}>Promoção da Semana!</Text>
+                        <View style={styles.promoDivider} />
+                        <Text style = {[styles.subtitlePromo, {color: theme.subtitlePromo}]}>✂️ Corte + Barba ✂️</Text>
+                        <Text style = {[styles.subtitlePromo, {color: theme.subtitlePromotitlePromo}]}>Por apenas R$ 50,00!</Text>
+
                     </View>
 
-                    <Text style={styles.title}>Serviços Populares:</Text>
+                    <Text style={[styles.title, {color: theme.title}]}>Serviços Populares:</Text>
                     <HorizontalList
                         data={servicos}
                         renderCard={(item) => (
-                            <ServiceCard {...item}/>
+                            <ServiceCard {...item} onSelect={setServiceSelected}/>
                         )}
                     />
 
-                    <Text style={styles.title}>Nossos Cabelereiros:</Text>
+                    <Text style={[styles.title, {color: theme.title}]}>Nossos Cabelereiros:</Text>
                     <HorizontalList
                         data={barbeiros}
                          renderCard={(item) => (
@@ -60,34 +94,36 @@ export default function Index() {
 
 const styles = StyleSheet.create({
 
-    /*TEMA E DESIGN: O app deve seguir um design moderno e minimalista utilizando as cores:
+    /* Branco (#FFFFFF)
 
-Branco (#FFFFFF)
+    Azul (#1E3A8A)
 
-Azul (#1E3A8A)
+    Cinza (#6B7280)
 
-Cinza (#6B7280)
-
-Amarelo (#FACC15)*/
+    Amarelo (#FACC15)*/
+    
+     wrapper: {
+        flex: 1
+    },
+    scroll: {
+        paddingBottom: 90
+    },
     container: {
-        padding: 12
+        padding: 16,
+        gap: 12
     },
 
     text: {
-        color: "#0f072e",
         fontSize: 14
     }, 
     title: {
-        color: "#000000",
         fontSize: 24,
         fontWeight: "bold",
     },
     promoCard: {
-        backgroundColor: "#000000",
         width: "100%",
         padding: 10,
         borderRadius: 10,
-        width: "100%",
         height: 200,
         justifyContent: "center",
         alignItems: "center",
@@ -107,5 +143,11 @@ Amarelo (#FACC15)*/
         fontSize: 20,
         fontWeight: "bold",
         textAlign: "center"
-    }
+    },
+    promoDivider: {
+        width: "100%",
+        height: 1,
+        backgroundColor: "#000000",
+        marginVertical: 9.5
+    },
 })

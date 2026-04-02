@@ -28,7 +28,7 @@ Amarelo (#FACC15)*/
         justifyContent: "center",
         alignItems: "center",
         flexDirection: "row",
-        gap: "50%"
+        gap: 50
     },
 
     textTitle: {
