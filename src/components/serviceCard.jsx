@@ -1,3 +1,6 @@
+// Card de serviço exibido na lista horizontal da Home
+// onSelect → salva o título do serviço selecionado no estado da Home
+// futuramente o valor será usado na tela de agendamento
 
 import { View, Text, StyleSheet } from "react-native";
 import ServiceButton from "./serviceButton";
@@ -9,6 +12,8 @@ export default function ServiceCard({title, price, time, onSelect}) {
             <Text style = {[styles.text, styles.titleService]}>{title}</Text>
             <Text style = {[styles.text, styles.textInfo]}>💵Preço: {price}</Text>
             <Text style = {[styles.text, styles.textInfo]}>⏱️Tempo Aprox: {time}</Text>
+
+            {/* Ao clicar, passa o título do serviço para o componente pai */}
             <ServiceButton onPress={() => onSelect(title)}/>
         </View>
     )

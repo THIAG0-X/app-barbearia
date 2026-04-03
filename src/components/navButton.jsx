@@ -1,17 +1,32 @@
+// Botão individual da navbar
+// isActive → true quando a rota atual bate com o botão
+// icon → recebe um Ionicons, a cor é trocada automaticamente via cloneElement
+
 import { TouchableOpacity, View, Text, StyleSheet } from "react-native";
 import React from "react";
 
 
 export default function NavButton({icon, title, isActive, onPress}) {
-
-     const iconWithColor = React.cloneElement(icon, {
+    
+    // Troca a cor do ícone dependendo se está ativo ou não
+    const iconWithColor = React.cloneElement(icon, {
         color: isActive ? "#000000" : "#ffffff"  
     })
 
     return (
-        <TouchableOpacity style={styles.btnContainer} onPress={onPress}>
-            <View style = {[styles.button, isActive && styles.buttonActive]}>  {iconWithColor}</View>
-            
+        <TouchableOpacity 
+            style={styles.btnContainer} 
+            onPress={onPress} 
+            activeOpacity={0.3} 
+            hitSlop={{top: 10, bottom: 10, left: 10, right: 10}
+        }>
+
+            {/* Círculo do botão — amarelo quando ativo, azul quando inativo */}
+            <View style = {[styles.button, isActive && styles.buttonActive]}>
+                {iconWithColor}
+            </View>
+
+            {/* Texto abaixo do botão */}
             <Text style = {[styles.btnText, isActive && styles.btnTextActive]}>{title}</Text>
         </TouchableOpacity>
     )
@@ -30,15 +45,15 @@ const styles = StyleSheet.create({
     },
 
     button: {
-        backgroundColor: "#1E3A8A",
+        backgroundColor: "#1E3A8A", // azul inativo
         height: 50,
         borderRadius: 25,
         padding: 10
     },
 
     buttonActive: {
-        backgroundColor: "#FACC15",
-        marginBottom: 8
+        backgroundColor: "#FACC15", // amarelo ativo
+        marginBottom: 8,
 
 
     },

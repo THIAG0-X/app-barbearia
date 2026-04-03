@@ -1,3 +1,6 @@
+// Botão de agendamento usado dentro do ServiceCard
+// isActive reservado para uso futuro
+
 import {TouchableOpacity, Text, StyleSheet} from "react-native"
 
 export default function ServiceButton({isActive, onPress}) {

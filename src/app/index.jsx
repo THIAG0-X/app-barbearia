@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, useColorScheme  } from "react-native";
-import Header  from "@/components/header";
-import Navbar from "@/components/navbar";
 import HorizontalList from "@/components/horizontalList"
 import ServiceCard from "@/components/serviceCard"
 import BarberCard from "@/components/barberCard"
 
+// Definição dos temas claro e escuro
+// Para adicionar novas cores, adicione em ambos os objetos (light e dark)
 const themes = {
     light: {
         background: "#F0F0F0",
@@ -25,20 +25,28 @@ const themes = {
     }
 }
 
-export default function Index() {
+export default function Homepage() {
 
+    // Detecta o tema do celular ("light" ou "dark")
     const colorScheme = useColorScheme()
     const [theme, setTheme] = useState(themes.light)
     
+
+    // Atualiza o tema sempre que o celular mudar de claro para escuro ou vice-versa
     useEffect(() => {
         setTheme(colorScheme === "dark" ? themes.dark : themes.light)
     }, [colorScheme])
     
+    // Guarda o serviço selecionado pelo usuário
+    // Será usado futuramente na tela de agendamento
     const [serviceSelected, setServiceSelected] = useState(null)
+
+    // Log para debug — pode remover quando integrar com a tela de agendamento
     useEffect(() => {
         console.log("Serviço selecionado:", serviceSelected);
     }, [serviceSelected])
 
+    // Lista de serviços
     const servicos = [
         {id: "1", title: "Combo Corte + Barba", price: "R$ 50", time: "20 min"},
         {id: "2", title: "Corte Simples", price: "R$ 25", time: "20 min"},
@@ -47,6 +55,7 @@ export default function Index() {
         {id: "5", title: "Sombrancelha", price: "R$ 10", time: "20 min"},
     ]
 
+    // Lista de barbeiros
     const barbeiros = [
         {id: "1", name: "Roberto"},
         {id: "2", name: "Carlos"},
@@ -56,10 +65,10 @@ export default function Index() {
 
     return (
         <View style={[styles.wrapper, {backgroundColor: theme.background}]}>
-            <Header />
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
                 <View style={styles.container}>
                     
+                    {/* Card de promoção da semana */}
                     <View style = {[styles.promoCard, {backgroundColor: theme.promoCard}]}>
 
                         <Text style={[styles.titlePromo, {color: theme.titlePromo}]}>Promoção da Semana!</Text>
@@ -69,6 +78,8 @@ export default function Index() {
 
                     </View>
 
+                     {/* Lista horizontal de serviços
+                        onSelect salva o serviço escolhido em serviceSelected */}
                     <Text style={[styles.title, {color: theme.title}]}>Serviços Populares:</Text>
                     <HorizontalList
                         data={servicos}
@@ -77,6 +88,7 @@ export default function Index() {
                         )}
                     />
 
+                    {/* Lista horizontal de barbeiros */}
                     <Text style={[styles.title, {color: theme.title}]}>Nossos Cabelereiros:</Text>
                     <HorizontalList
                         data={barbeiros}
@@ -87,7 +99,6 @@ export default function Index() {
 
                 </View>
             </ScrollView>
-            <Navbar />
         </View>
     )
 }
@@ -101,12 +112,12 @@ const styles = StyleSheet.create({
     Cinza (#6B7280)
 
     Amarelo (#FACC15)*/
-    
+
      wrapper: {
         flex: 1
     },
     scroll: {
-        paddingBottom: 90
+        paddingBottom: 90  // Espaço extra no final para o conteúdo não ficar atrás da Navbar
     },
     container: {
         padding: 16,

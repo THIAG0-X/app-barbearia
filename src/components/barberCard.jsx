@@ -1,3 +1,4 @@
+// Card do barbeiro exibido na lista horizontal da Home
 
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";

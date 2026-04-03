@@ -1,3 +1,7 @@
+// Cabeçalho fixo do app exibido em todas as telas via _layout.jsx
+// Para adicionar ícones (ex: notificações, menu), use flexDirection: "row"
+// e adicione Ionicons ao lado do título
+
 
 import {View, Text, StyleSheet} from "react-native"
 
@@ -11,15 +15,6 @@ export default function Header(){
 
 const styles = StyleSheet.create({
 
-    /*TEMA E DESIGN: O app deve seguir um design moderno e minimalista utilizando as cores:
-
-Branco (#FFFFFF)
-
-Azul (#1E3A8A)
-
-Cinza (#6B7280)
-
-Amarelo (#FACC15)*/
 
     container: {
         backgroundColor: "#1E3A8A",

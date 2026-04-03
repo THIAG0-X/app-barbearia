@@ -1,50 +1,87 @@
-# Welcome to your Expo app 👋
+# BarberPro 💈
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+App mobile de agendamento para barbearias desenvolvido em React Native com Expo.
 
-## Get started
+---
 
-1. Install dependencies
+## 📱 Sobre o Projeto
 
-   ```bash
-   npm install
-   ```
+O BarberPro é um aplicativo mobile que permite aos clientes visualizar serviços, conhecer os barbeiros disponíveis e realizar agendamentos de forma simples e intuitiva. O app conta com suporte a tema claro e escuro de acordo com as configurações do dispositivo.
 
-2. Start the app
+---
 
-   ```bash
-   npx expo start
-   ```
+## 🚀 Tecnologias Utilizadas
 
-In the output, you'll find options to open the app in a
+- [React Native](https://reactnative.dev/)
+- [Expo](https://expo.dev/)
+- [Expo Router](https://expo.github.io/router) — navegação entre telas
+- [AsyncStorage](https://react-native-async-storage.github.io/async-storage/) — persistência de dados local
+- [Expo Vector Icons](https://icons.expo.fyi/) — ícones da interface
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## 📂 Estrutura do Projeto
 
-## Get a fresh project
 
-When you're ready, run:
+---
+
+## ⚙️ Como Rodar o Projeto
+
+### Pré-requisitos
+
+- [Node.js](https://nodejs.org/)
+- [Expo CLI](https://docs.expo.dev/get-started/installation/)
+- Aplicativo [Expo Go](https://expo.dev/client) no celular
+
+### Instalação
 
 ```bash
-npm run reset-project
+# Clone o repositório
+git clone https://github.com/seu-usuario/barberpro.git
+
+# Entre na pasta do projeto
+cd barberpro
+
+# Instale as dependências
+npm install
+
+# Inicie o projeto
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Escaneie o QR Code com o Expo Go para rodar no celular.
 
-## Learn more
+---
 
-To learn more about developing your project with Expo, look at the following resources:
+## 🎨 Paleta de Cores
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+| Cor | Hex |
+|---|---|
+| Azul | `#1E3A8A` |
+| Cinza | `#6B7280` |
+| Amarelo | `#FACC15` |
+| Branco | `#FFFFFF` |
 
-## Join the community
+---
 
-Join our community of developers creating universal apps.
+## ✅ Funcionalidades
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- [x] Tela Home com promoção da semana
+- [x] Lista horizontal de serviços
+- [x] Lista horizontal de barbeiros
+- [x] Navegação entre telas com animação
+- [x] Suporte a tema claro e escuro
+- [x] Navbar com botão ativo por rota
+- [ ] Tela de login
+- [ ] Tela de cadastro
+- [ ] Autenticação com AsyncStorage
+
+---
+
+## 👥 Integrantes
+
+---
+
+## 📄 Licença
+
+Este projeto foi desenvolvido para fins acadêmicos.

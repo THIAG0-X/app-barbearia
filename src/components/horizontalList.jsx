@@ -1,3 +1,6 @@
+// Lista horizontal reutilizável
+// Recebe qualquer tipo de card via renderCard
+// Para mudar a altura máxima da lista, ajuste maxHeight
 
 import { FlatList, View, StyleSheet } from "react-native";
 
