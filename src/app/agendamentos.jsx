@@ -2,12 +2,45 @@
 import React, { useState } from "react";
 import {
     View, Text, StyleSheet, ScrollView,
-    TouchableOpacity, Alert,
+    TouchableOpacity, Modal,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useApp } from "../context/AppContext";
 import { getBarbeiro, getServico } from "../context/mockData";
+
+function ConfirmModal({ visivel, onConfirmar, onCancelar }) {
+    return (
+        <Modal transparent animationType="fade" visible={visivel}>
+            <View style={mStyles.overlay}>
+                <View style={mStyles.box}>
+                    <Text style={mStyles.titulo}>Cancelar agendamento</Text>
+                    <Text style={mStyles.mensagem}>Tem certeza que deseja cancelar?</Text>
+                    <View style={mStyles.botoes}>
+                        <TouchableOpacity style={mStyles.btnNao} onPress={onCancelar}>
+                            <Text style={mStyles.btnNaoText}>Não</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={mStyles.btnSim} onPress={onConfirmar}>
+                            <Text style={mStyles.btnSimText}>Sim, cancelar</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </View>
+        </Modal>
+    );
+}
+
+const mStyles = StyleSheet.create({
+    overlay:  { flex: 1, backgroundColor: "#00000099", justifyContent: "center", alignItems: "center" },
+    box:      { backgroundColor: "#1F2937", borderRadius: 20, padding: 24, width: "85%", maxWidth: 360, gap: 12, borderWidth: 1, borderColor: "#374151" },
+    titulo:   { color: "#fff", fontSize: 18, fontWeight: "bold" },
+    mensagem: { color: "#9CA3AF", fontSize: 14 },
+    botoes:   { flexDirection: "row", gap: 10, marginTop: 8 },
+    btnNao:   { flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: "#374151", alignItems: "center" },
+    btnNaoText:  { color: "#9CA3AF", fontWeight: "600" },
+    btnSim:   { flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: "#EF4444", alignItems: "center" },
+    btnSimText:  { color: "#fff", fontWeight: "bold" },
+});
 
 const STATUS_CONFIG = {
     pendente:  { cor: "#F5C518", label: "Pendente",  icone: "time-outline" },
@@ -29,19 +62,27 @@ export default function Agendamentos() {
 
     const filtrados = filtro === "todos" ? todos : todos.filter(a => a.status === filtro);
 
+    const [modalVisivel, setModalVisivel] = useState(false);
+    const [idParaCancelar, setIdParaCancelar] = useState(null);
+
     const handleCancelar = (id) => {
-        Alert.alert(
-            "Cancelar agendamento",
-            "Tem certeza que deseja cancelar?",
-            [
-                { text: "Não", style: "cancel" },
-                { text: "Sim, cancelar", style: "destructive", onPress: () => cancelarAgendamento(id) },
-            ]
-        );
+        setIdParaCancelar(id);
+        setModalVisivel(true);
+    };
+
+    const confirmarCancelamento = () => {
+        cancelarAgendamento(idParaCancelar);
+        setModalVisivel(false);
+        setIdParaCancelar(null);
     };
 
     return (
         <View style={styles.container}>
+            <ConfirmModal
+                visivel={modalVisivel}
+                onConfirmar={confirmarCancelamento}
+                onCancelar={() => setModalVisivel(false)}
+            />
             {/* Filtros */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtrosScroll}>
                 <View style={styles.filtrosRow}>

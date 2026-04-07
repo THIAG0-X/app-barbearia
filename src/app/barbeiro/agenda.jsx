@@ -1,8 +1,8 @@
-// src/app/barbeiro/agenda.jsx  —  Agenda do Barbeiro
+// src/app/barbeiro/agenda.jsx  —  Agenda do Barbeiro (compatível com web)
 import React, { useState } from "react";
 import {
     View, Text, StyleSheet, ScrollView,
-    TouchableOpacity, Alert,
+    TouchableOpacity, Modal,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useApp } from "../../context/AppContext";
@@ -26,38 +26,99 @@ const STATUS_CONFIG = {
     cancelado: { cor: "#EF4444", label: "Cancelado", icone: "close-circle" },
 };
 
+// Modal de confirmação customizado (funciona no web)
+function ConfirmModal({ visivel, titulo, mensagem, onConfirmar, onCancelar, corConfirmar = "#10B981" }) {
+    return (
+        <Modal transparent animationType="fade" visible={visivel}>
+            <View style={modal.overlay}>
+                <View style={modal.box}>
+                    <Text style={modal.titulo}>{titulo}</Text>
+                    <Text style={modal.mensagem}>{mensagem}</Text>
+                    <View style={modal.botoes}>
+                        <TouchableOpacity style={modal.btnCancelar} onPress={onCancelar}>
+                            <Text style={modal.btnCancelarText}>Não</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={[modal.btnConfirmar, { backgroundColor: corConfirmar }]} onPress={onConfirmar}>
+                            <Text style={modal.btnConfirmarText}>Sim, confirmar</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </View>
+        </Modal>
+    );
+}
+
+const modal = StyleSheet.create({
+    overlay: {
+        flex: 1, backgroundColor: "#00000099",
+        justifyContent: "center", alignItems: "center",
+    },
+    box: {
+        backgroundColor: "#1F2937", borderRadius: 20,
+        padding: 24, width: "85%", maxWidth: 360, gap: 12,
+        borderWidth: 1, borderColor: "#374151",
+    },
+    titulo:   { color: "#fff", fontSize: 18, fontWeight: "bold" },
+    mensagem: { color: "#9CA3AF", fontSize: 14, lineHeight: 20 },
+    botoes:   { flexDirection: "row", gap: 10, marginTop: 8 },
+    btnCancelar: {
+        flex: 1, paddingVertical: 12, borderRadius: 10,
+        backgroundColor: "#374151", alignItems: "center",
+    },
+    btnCancelarText: { color: "#9CA3AF", fontWeight: "600" },
+    btnConfirmar: {
+        flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: "center",
+    },
+    btnConfirmarText: { color: "#fff", fontWeight: "bold" },
+});
+
 export default function Agenda() {
     const { usuario, agendamentosBarbeiro, concluirAgendamento, cancelarAgendamento } = useApp();
-    if (!usuario) {
-        return (
-            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-                <Text style={{ color: '#fff' }}>Carregando perfil...</Text>
-            </View>
-        );
-    }
     const [dataSelecionada, setDataSelecionada] = useState(DIAS_SEMANA[0].iso);
 
-    const todos     = agendamentosBarbeiro(usuario.id);
-    const do_dia    = todos
+    // Estado do modal
+    const [modalConfig, setModalConfig] = useState({
+        visivel: false, titulo: "", mensagem: "", onConfirmar: null, corConfirmar: "#10B981",
+    });
+
+    const fecharModal = () => setModalConfig(m => ({ ...m, visivel: false }));
+
+    const confirmarConcluir = (id) => {
+        setModalConfig({
+            visivel: true,
+            titulo: "Concluir atendimento",
+            mensagem: "Deseja marcar este atendimento como concluído?",
+            corConfirmar: "#10B981",
+            onConfirmar: () => { concluirAgendamento(id); fecharModal(); },
+        });
+    };
+
+    const confirmarCancelar = (id) => {
+        setModalConfig({
+            visivel: true,
+            titulo: "Cancelar atendimento",
+            mensagem: "Tem certeza que deseja cancelar este agendamento?",
+            corConfirmar: "#EF4444",
+            onConfirmar: () => { cancelarAgendamento(id); fecharModal(); },
+        });
+    };
+
+    const todos  = agendamentosBarbeiro(usuario.id);
+    const do_dia = todos
         .filter(a => a.data === dataSelecionada)
         .sort((a, b) => a.horario.localeCompare(b.horario));
 
-    const handleConcluir = (id) => {
-        Alert.alert("Concluir atendimento", "Marcar como concluído?", [
-            { text: "Cancelar", style: "cancel" },
-            { text: "Confirmar", onPress: () => concluirAgendamento(id) },
-        ]);
-    };
-
-    const handleCancelar = (id) => {
-        Alert.alert("Cancelar atendimento", "Tem certeza?", [
-            { text: "Não", style: "cancel" },
-            { text: "Sim", style: "destructive", onPress: () => cancelarAgendamento(id) },
-        ]);
-    };
-
     return (
         <View style={styles.container}>
+
+            <ConfirmModal
+                visivel={modalConfig.visivel}
+                titulo={modalConfig.titulo}
+                mensagem={modalConfig.mensagem}
+                corConfirmar={modalConfig.corConfirmar}
+                onConfirmar={modalConfig.onConfirmar}
+                onCancelar={fecharModal}
+            />
 
             {/* Seletor de dia */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.diasScroll}>
@@ -113,14 +174,12 @@ export default function Agenda() {
 
                     return (
                         <View key={ag.id} style={styles.card}>
-                            {/* Linha de tempo */}
                             <View style={styles.timeline}>
                                 <Text style={styles.timelineHora}>{ag.horario}</Text>
                                 <View style={[styles.timelineDot, { backgroundColor: cfg.cor }]} />
                                 <View style={styles.timelineLine} />
                             </View>
 
-                            {/* Conteúdo */}
                             <View style={styles.cardContent}>
                                 <View style={styles.cardHeader}>
                                     <Text style={styles.clienteNome}>{cliente?.nome}</Text>
@@ -129,7 +188,9 @@ export default function Agenda() {
                                         <Text style={[styles.statusText, { color: cfg.cor }]}>{cfg.label}</Text>
                                     </View>
                                 </View>
+
                                 <Text style={styles.servicoNome}>{servico?.nome}</Text>
+
                                 <View style={styles.cardFooter}>
                                     <Text style={styles.duracao}>⏱ {servico?.duracao} min</Text>
                                     <Text style={styles.preco}>R$ {servico?.preco}</Text>
@@ -139,14 +200,14 @@ export default function Agenda() {
                                     <View style={styles.acoes}>
                                         <TouchableOpacity
                                             style={[styles.acaoBtn, styles.acaoConcluir]}
-                                            onPress={() => handleConcluir(ag.id)}
+                                            onPress={() => confirmarConcluir(ag.id)}
                                         >
                                             <Ionicons name="checkmark" size={14} color="#fff" />
                                             <Text style={styles.acaoBtnText}>Concluir</Text>
                                         </TouchableOpacity>
                                         <TouchableOpacity
                                             style={[styles.acaoBtn, styles.acaoCancelar]}
-                                            onPress={() => handleCancelar(ag.id)}
+                                            onPress={() => confirmarCancelar(ag.id)}
                                         >
                                             <Ionicons name="close" size={14} color="#fff" />
                                             <Text style={styles.acaoBtnText}>Cancelar</Text>
@@ -177,30 +238,24 @@ const styles = StyleSheet.create({
     diaDiaActive: { color: "#111827" },
     diaNum:       { color: "#fff", fontWeight: "bold", fontSize: 18 },
     diaNumActive: { color: "#111827" },
-    dotIndicador: {
-        width: 6, height: 6, borderRadius: 3,
-        backgroundColor: "#F5C518", marginTop: 3,
-    },
+    dotIndicador: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#F5C518", marginTop: 3 },
 
     resumoDia: {
         flexDirection: "row", justifyContent: "space-between", alignItems: "center",
         paddingHorizontal: 16, paddingVertical: 10,
     },
-    resumoData:  { color: "#fff", fontWeight: "600", fontSize: 14, textTransform: "capitalize" },
-    resumoBadge: {
-        backgroundColor: "#F5C51820", borderRadius: 20,
-        paddingVertical: 4, paddingHorizontal: 10,
-    },
+    resumoData:      { color: "#fff", fontWeight: "600", fontSize: 14, textTransform: "capitalize" },
+    resumoBadge:     { backgroundColor: "#F5C51820", borderRadius: 20, paddingVertical: 4, paddingHorizontal: 10 },
     resumoBadgeText: { color: "#F5C518", fontSize: 12, fontWeight: "600" },
 
     lista: { padding: 16, paddingBottom: 100, gap: 4 },
 
-    vazio: { alignItems: "center", marginTop: 60, gap: 12 },
+    vazio:     { alignItems: "center", marginTop: 60, gap: 12 },
     vazioText: { color: "#6B7280", fontSize: 15 },
 
     card: { flexDirection: "row", gap: 12, marginBottom: 16 },
 
-    timeline: { alignItems: "center", width: 44 },
+    timeline:     { alignItems: "center", width: 44 },
     timelineHora: { color: "#F5C518", fontSize: 12, fontWeight: "bold", marginBottom: 4 },
     timelineDot:  { width: 12, height: 12, borderRadius: 6 },
     timelineLine: { flex: 1, width: 2, backgroundColor: "#1F2937", marginTop: 4 },
@@ -209,23 +264,25 @@ const styles = StyleSheet.create({
         flex: 1, backgroundColor: "#1F2937", borderRadius: 14, padding: 14,
         borderWidth: 1, borderColor: "#374151",
     },
-    cardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 },
+    cardHeader: {
+        flexDirection: "row", justifyContent: "space-between",
+        alignItems: "center", marginBottom: 4,
+    },
     clienteNome: { color: "#fff", fontWeight: "bold", fontSize: 15 },
     statusBadge: {
         flexDirection: "row", alignItems: "center", gap: 3,
         paddingVertical: 3, paddingHorizontal: 8, borderRadius: 20,
     },
-    statusText: { fontSize: 11, fontWeight: "600" },
-
+    statusText:  { fontSize: 11, fontWeight: "600" },
     servicoNome: { color: "#9CA3AF", fontSize: 13, marginBottom: 8 },
     cardFooter:  { flexDirection: "row", justifyContent: "space-between" },
-    duracao: { color: "#6B7280", fontSize: 12 },
-    preco:   { color: "#10B981", fontWeight: "bold", fontSize: 14 },
+    duracao:     { color: "#6B7280", fontSize: 12 },
+    preco:       { color: "#10B981", fontWeight: "bold", fontSize: 14 },
 
     acoes: { flexDirection: "row", gap: 8, marginTop: 10 },
     acaoBtn: {
-        flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center",
-        gap: 4, paddingVertical: 8, borderRadius: 8,
+        flex: 1, flexDirection: "row", alignItems: "center",
+        justifyContent: "center", gap: 4, paddingVertical: 8, borderRadius: 8,
     },
     acaoConcluir: { backgroundColor: "#10B981" },
     acaoCancelar: { backgroundColor: "#EF444460" },

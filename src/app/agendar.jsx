@@ -2,12 +2,48 @@
 import React, { useState } from "react";
 import {
     View, Text, StyleSheet, ScrollView,
-    TouchableOpacity, Alert, ActivityIndicator,
+    TouchableOpacity, ActivityIndicator, Modal,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useApp } from "../context/AppContext";
 import { SERVICOS, getBarbeiros, getBarbeiro, getServico } from "../context/mockData";
+
+function SucessoModal({ visivel, servico, barbeiro, data, horario, onVoltar }) {
+    return (
+        <Modal transparent animationType="fade" visible={visivel}>
+            <View style={mStyles.overlay}>
+                <View style={mStyles.box}>
+                    <View style={mStyles.iconeCircle}>
+                        <Ionicons name="checkmark" size={32} color="#111827" />
+                    </View>
+                    <Text style={mStyles.titulo}>Agendado com sucesso!</Text>
+                    <View style={mStyles.info}>
+                        <Text style={mStyles.infoItem}>✂️ {servico?.nome}</Text>
+                        <Text style={mStyles.infoItem}>👤 {barbeiro?.nome}</Text>
+                        <Text style={mStyles.infoItem}>📅 {data?.label} às {horario}</Text>
+                        <Text style={mStyles.infoPreco}>R$ {servico?.preco}</Text>
+                    </View>
+                    <TouchableOpacity style={mStyles.btn} onPress={onVoltar}>
+                        <Text style={mStyles.btnText}>Ver meus agendamentos</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </Modal>
+    );
+}
+
+const mStyles = StyleSheet.create({
+    overlay:     { flex: 1, backgroundColor: "#00000099", justifyContent: "center", alignItems: "center" },
+    box:         { backgroundColor: "#1F2937", borderRadius: 20, padding: 24, width: "85%", maxWidth: 360, gap: 16, alignItems: "center", borderWidth: 1, borderColor: "#374151" },
+    iconeCircle: { width: 64, height: 64, borderRadius: 32, backgroundColor: "#F5C518", justifyContent: "center", alignItems: "center" },
+    titulo:      { color: "#fff", fontSize: 20, fontWeight: "bold", textAlign: "center" },
+    info:        { width: "100%", backgroundColor: "#111827", borderRadius: 12, padding: 14, gap: 8 },
+    infoItem:    { color: "#9CA3AF", fontSize: 14 },
+    infoPreco:   { color: "#F5C518", fontWeight: "bold", fontSize: 16, marginTop: 4 },
+    btn:         { backgroundColor: "#F5C518", borderRadius: 12, paddingVertical: 12, paddingHorizontal: 24, width: "100%", alignItems: "center" },
+    btnText:     { color: "#111827", fontWeight: "bold", fontSize: 15 },
+});
 
 const DIAS = (() => {
     const hoje = new Date();
@@ -30,7 +66,8 @@ export default function Agendar() {
     const [servico,   setServico]   = useState(params.servicoId  ? getServico(params.servicoId)   : null);
     const [data,      setData]      = useState(null);
     const [horario,   setHorario]   = useState(null);
-    const [loading,   setLoading]   = useState(false);
+    const [loading,      setLoading]      = useState(false);
+    const [modalVisivel, setModalVisivel] = useState(false);
 
     // Se veio com barbeiroId, pula para step 1 (escolher serviço)
     // Se veio com servicoId, começa no step 0 (escolher barbeiro)
@@ -57,13 +94,7 @@ export default function Agendar() {
             });
             setLoading(false);
             if (result.ok) {
-                Alert.alert(
-                    "✅ Agendado!",
-                    `${servico.nome}\nBarbeiro: ${barbeiro.nome}\n${data.label} às ${horario}`,
-                    [{ text: "Ver meus agendamentos", onPress: () => router.replace("/agendamentos") }]
-                );
-            } else {
-                Alert.alert("Erro", result.erro);
+                setModalVisivel(true);
             }
         }, 900);
     };
@@ -191,6 +222,14 @@ export default function Agendar() {
 
     return (
         <View style={styles.container}>
+            <SucessoModal
+                visivel={modalVisivel}
+                servico={servico}
+                barbeiro={barbeiro}
+                data={data}
+                horario={horario}
+                onVoltar={() => { setModalVisivel(false); router.replace("/agendamentos"); }}
+            />
             {/* Header com steps */}
             <View style={styles.header}>
                 {step > 0 && (
