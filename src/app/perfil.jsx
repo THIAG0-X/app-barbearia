@@ -10,6 +10,14 @@ export default function Perfil() {
     const router = useRouter();
     const { usuario, logout, agendamentosCliente } = useApp();
 
+    if (!usuario) {
+        return (
+            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <Text style={{ color: '#fff' }}>Carregando perfil...</Text>
+            </View>
+        );
+    }
+
     const historico = agendamentosCliente(usuario.id)
         .filter(a => a.status === "concluido")
         .sort((a, b) => new Date(b.data) - new Date(a.data));

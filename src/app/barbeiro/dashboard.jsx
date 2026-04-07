@@ -50,6 +50,14 @@ export default function Dashboard() {
     const router = useRouter();
     const { usuario, dashboardBarbeiro, agendamentosBarbeiro, logout } = useApp();
 
+    if (!usuario) {
+        return (
+            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <Text style={{ color: '#fff' }}>Carregando perfil...</Text>
+            </View>
+        );
+    }
+
     const stats = dashboardBarbeiro(usuario.id);
 
     // Próximos agendamentos pendentes

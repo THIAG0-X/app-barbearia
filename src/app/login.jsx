@@ -59,7 +59,7 @@ export default function Login() {
 
                 {/* Demo buttons */}
                 <View style={styles.demoRow}>
-                    <Text style={styles.demoLabel}>Entrar como demo:</Text>
+                    <Text style={styles.demoLabel}>Entrar como:</Text>
                     <View style={styles.demoButtons}>
                         <TouchableOpacity style={styles.demoBtn} onPress={() => demo("cliente")}>
                             <Ionicons name="person" size={14} color="#F5C518" />

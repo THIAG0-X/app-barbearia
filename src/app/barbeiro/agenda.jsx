@@ -28,6 +28,13 @@ const STATUS_CONFIG = {
 
 export default function Agenda() {
     const { usuario, agendamentosBarbeiro, concluirAgendamento, cancelarAgendamento } = useApp();
+    if (!usuario) {
+        return (
+            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <Text style={{ color: '#fff' }}>Carregando perfil...</Text>
+            </View>
+        );
+    }
     const [dataSelecionada, setDataSelecionada] = useState(DIAS_SEMANA[0].iso);
 
     const todos     = agendamentosBarbeiro(usuario.id);
