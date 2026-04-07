@@ -5,18 +5,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { View, StyleSheet } from "react-native";
 import { useRouter, usePathname } from "expo-router";
 import NavButton from "./navButton";
+import { useAuth } from "../app/_layout";
 
 export default function Navbar() {
-    const router = useRouter()
-    const pathname = usePathname() // Rota atual
+    const router = useRouter();
+    const pathname = usePathname();
+    const { logout } = useAuth();
 
-     // Evita navegar para a mesma página que já está ativa
+    // Evita navegar para a mesma página que já está ativa
     const navigateTo = (path) => {
-        console.log("pathname atual:", pathname)
-        console.log("destino:", path)
-        if (pathname === path) return
-        router.replace(path)
-    }
+        if (pathname === path) return;
+        router.replace(path);
+    };
 
     return (
         <View style={styles.navbar}>
@@ -44,8 +44,14 @@ export default function Navbar() {
                 isActive={pathname === "/perfil"}
                 onPress={() => navigateTo("/perfil")}
             />
+            <NavButton
+                icon={<Ionicons name="log-out-outline" size={28} color="white" />}
+                title="Sair"
+                isActive={false}
+                onPress={logout} // ← desloga e vai para /login
+            />
         </View>
-    )
+    );
 }
 
 const styles = StyleSheet.create({
@@ -60,7 +66,4 @@ const styles = StyleSheet.create({
         bottom: 0,
         height: 70
     },
-    text: {
-        color: "#000000"
-    }
-})
+});

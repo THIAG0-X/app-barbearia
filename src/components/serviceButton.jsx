@@ -1,37 +1,45 @@
-// Botão de agendamento usado dentro do ServiceCard
-// isActive reservado para uso futuro
+import React from "react";
+import { TouchableOpacity, Text, StyleSheet } from "react-native";
+import { useRouter } from "expo-router";
 
-import {TouchableOpacity, Text, StyleSheet} from "react-native"
+export default function ServiceButton({ label = "Agende agora!", servicoId, onPress }) {
+  const router = useRouter();
 
-export default function ServiceButton({isActive, onPress}) {
-    return (
-        <TouchableOpacity 
-            style = {styles.btnToSchedule}  onPress={onPress}>
-            <Text style = {styles.textButton}>Agende agora!</Text>
-        </TouchableOpacity>
-    )
+  const handlePress = () => {
+    // Chama o callback do pai (ex: salvar serviço selecionado)
+    if (onPress) onPress();
+
+    // Navega para agendamento passando o id do serviço como parâmetro
+    router.push({
+      pathname: "/agendamento",
+      params: servicoId ? { servicoId } : {},
+    });
+  };
+
+  return (
+    <TouchableOpacity style={styles.btn} onPress={handlePress} activeOpacity={0.8}>
+      <Text style={styles.btnText}>{label}</Text>
+    </TouchableOpacity>
+  );
 }
 
-const styles = StyleSheet.create ({
-    btnToSchedule: {
-        backgroundColor: "#FACC15",
-        padding: 5,
-        width: "100%",
-        minHeight: 20,
-        alignItems: "center",
-        justifyContent: "center",
-        borderRadius: 10,
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2,
-        marginVertical: 5
-    },
-
-    textButton: {
-        color: "#000000",
-        textShadowColor: "rgba(0, 0, 0, 0.16)",
-        textShadowOffset: { width: 0, height: 1 },
-        textShadowRadius: 1,
-        textAlign: "center"
-    }
-})
+const styles = StyleSheet.create({
+  btn: {
+    backgroundColor: "#F5C518",
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    marginTop: 10,
+    shadowColor: "#F5C518",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  btnText: {
+    color: "#1a1a2e",
+    fontWeight: "bold",
+    fontSize: 14,
+  },
+});
