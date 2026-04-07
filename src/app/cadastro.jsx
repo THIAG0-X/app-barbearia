@@ -1,3 +1,4 @@
+// src/app/cadastro.jsx
 import React, { useState } from "react";
 import {
     View, Text, TextInput, TouchableOpacity,
@@ -5,17 +6,19 @@ import {
     ScrollView, ActivityIndicator, Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { useAuth } from "./_layout";
+import { Ionicons } from "@expo/vector-icons";
+import { useApp } from "../context/AppContext";
 
 export default function Cadastro() {
-    const router = useRouter();
-    const { login } = useAuth();
+    const router        = useRouter();
+    const { cadastrar } = useApp();
 
-    const [nome, setNome] = useState("");
-    const [email, setEmail] = useState("");
-    const [senha, setSenha] = useState("");
+    const [tipo,           setTipo]           = useState("cliente"); // "cliente" | "barbeiro"
+    const [nome,           setNome]           = useState("");
+    const [email,          setEmail]          = useState("");
+    const [senha,          setSenha]          = useState("");
     const [confirmarSenha, setConfirmarSenha] = useState("");
-    const [loading, setLoading] = useState(false);
+    const [loading,        setLoading]        = useState(false);
 
     const handleCadastro = () => {
         if (!nome || !email || !senha || !confirmarSenha) {
@@ -27,21 +30,19 @@ export default function Cadastro() {
             return;
         }
         if (senha.length < 6) {
-            Alert.alert("Erro", "A senha deve ter pelo menos 6 caracteres.");
+            Alert.alert("Erro", "Senha mínimo 6 caracteres.");
             return;
         }
-
         setLoading(true);
-        // Simulação — substitua pelo seu serviço real (Firebase, API, etc.)
         setTimeout(() => {
+            const result = cadastrar(nome.trim(), email.trim(), senha, tipo);
             setLoading(false);
-            Alert.alert("Sucesso!", "Conta criada com sucesso!", [
-                {
-                    text: "Entrar agora",
-                    onPress: () => login(), // ← já loga direto após cadastro
-                },
-            ]);
-        }, 1500);
+            if (result.ok) {
+                router.replace(result.tipo === "barbeiro" ? "/barbeiro/dashboard" : "/");
+            } else {
+                Alert.alert("Erro", result.erro);
+            }
+        }, 800);
     };
 
     return (
@@ -49,62 +50,81 @@ export default function Cadastro() {
             style={styles.container}
             behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
-            <ScrollView
-                contentContainerStyle={styles.scroll}
-                showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled"
-            >
-                <View style={styles.header}>
-                    <Text style={styles.logo}>BarberPro</Text>
-                    <Text style={styles.subtitle}>Crie sua conta gratuitamente</Text>
+            <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+
+                {/* Logo */}
+                <View style={styles.logoArea}>
+                    <View style={styles.logoCircle}>
+                        <Ionicons name="cut" size={36} color="#111827" />
+                    </View>
+                    <Text style={styles.logoText}>BarberPro</Text>
+                    <Text style={styles.logoSub}>Crie sua conta</Text>
                 </View>
 
+                {/* Seletor de tipo */}
+                <View style={styles.tipoContainer}>
+                    <Text style={styles.tipoTitle}>Você é:</Text>
+                    <View style={styles.tipoRow}>
+                        <TouchableOpacity
+                            style={[styles.tipoBtn, tipo === "cliente" && styles.tipoBtnActive]}
+                            onPress={() => setTipo("cliente")}
+                        >
+                            <Ionicons
+                                name="person"
+                                size={22}
+                                color={tipo === "cliente" ? "#111827" : "#6B7280"}
+                            />
+                            <Text style={[styles.tipoBtnText, tipo === "cliente" && styles.tipoBtnTextActive]}>
+                                Cliente
+                            </Text>
+                            <Text style={[styles.tipoDesc, tipo === "cliente" && styles.tipoDescActive]}>
+                                Agende serviços
+                            </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[styles.tipoBtn, tipo === "barbeiro" && styles.tipoBtnActive]}
+                            onPress={() => setTipo("barbeiro")}
+                        >
+                            <Ionicons
+                                name="cut"
+                                size={22}
+                                color={tipo === "barbeiro" ? "#111827" : "#6B7280"}
+                            />
+                            <Text style={[styles.tipoBtnText, tipo === "barbeiro" && styles.tipoBtnTextActive]}>
+                                Barbeiro
+                            </Text>
+                            <Text style={[styles.tipoDesc, tipo === "barbeiro" && styles.tipoDescActive]}>
+                                Gerencie sua agenda
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                {/* Form */}
                 <View style={styles.form}>
                     <Text style={styles.label}>Nome completo</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Seu nome"
-                        placeholderTextColor="#666"
-                        autoCapitalize="words"
-                        value={nome}
-                        onChangeText={setNome}
-                    />
+                    <TextInput style={styles.input} placeholder="Seu nome" placeholderTextColor="#4B5563"
+                        autoCapitalize="words" value={nome} onChangeText={setNome} />
 
                     <Text style={styles.label}>E-mail</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="seuemail@exemplo.com"
-                        placeholderTextColor="#666"
-                        keyboardType="email-address"
-                        autoCapitalize="none"
-                        value={email}
-                        onChangeText={setEmail}
-                    />
+                    <TextInput style={styles.input} placeholder="seuemail@exemplo.com" placeholderTextColor="#4B5563"
+                        keyboardType="email-address" autoCapitalize="none" value={email} onChangeText={setEmail} />
 
                     <Text style={styles.label}>Senha</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Mínimo 6 caracteres"
-                        placeholderTextColor="#666"
-                        secureTextEntry
-                        value={senha}
-                        onChangeText={setSenha}
-                    />
+                    <TextInput style={styles.input} placeholder="Mínimo 6 caracteres" placeholderTextColor="#4B5563"
+                        secureTextEntry value={senha} onChangeText={setSenha} />
 
                     <Text style={styles.label}>Confirmar senha</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Repita sua senha"
-                        placeholderTextColor="#666"
-                        secureTextEntry
-                        value={confirmarSenha}
-                        onChangeText={setConfirmarSenha}
-                    />
+                    <TextInput style={styles.input} placeholder="Repita sua senha" placeholderTextColor="#4B5563"
+                        secureTextEntry value={confirmarSenha} onChangeText={setConfirmarSenha} />
 
                     <TouchableOpacity style={styles.btnCadastro} onPress={handleCadastro} disabled={loading}>
                         {loading
-                            ? <ActivityIndicator color="#1a1a2e" />
-                            : <Text style={styles.btnCadastroText}>Criar conta</Text>
+                            ? <ActivityIndicator color="#111827" />
+                            : <Text style={styles.btnCadastroText}>
+                                Criar conta como {tipo === "cliente" ? "Cliente" : "Barbeiro"}
+                              </Text>
                         }
                     </TouchableOpacity>
 
@@ -115,48 +135,53 @@ export default function Cadastro() {
                         </Text>
                     </TouchableOpacity>
                 </View>
+
             </ScrollView>
         </KeyboardAvoidingView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#1a1a2e" },
-    scroll: {
-        flexGrow: 1,
-        justifyContent: "center",
-        paddingHorizontal: 24,
-        paddingVertical: 40,
+    container: { flex: 1, backgroundColor: "#111827" },
+    scroll: { flexGrow: 1, padding: 24, paddingBottom: 40 },
+
+    logoArea: { alignItems: "center", marginBottom: 24, marginTop: 20 },
+    logoCircle: {
+        width: 70, height: 70, borderRadius: 35,
+        backgroundColor: "#F5C518", justifyContent: "center", alignItems: "center",
+        marginBottom: 10, elevation: 8,
     },
-    header: { alignItems: "center", marginBottom: 40 },
-    logo: { fontSize: 36, fontWeight: "bold", color: "#F5C518", letterSpacing: 2 },
-    subtitle: { color: "#aaa", fontSize: 15, marginTop: 6 },
+    logoText: { fontSize: 28, fontWeight: "bold", color: "#F5C518", letterSpacing: 3 },
+    logoSub:  { color: "#6B7280", fontSize: 13, marginTop: 4 },
+
+    tipoContainer: { marginBottom: 20 },
+    tipoTitle: { color: "#9CA3AF", fontSize: 13, fontWeight: "600", marginBottom: 10, textAlign: "center" },
+    tipoRow: { flexDirection: "row", gap: 12 },
+    tipoBtn: {
+        flex: 1, alignItems: "center", padding: 14,
+        borderRadius: 14, borderWidth: 1.5, borderColor: "#374151",
+        backgroundColor: "#1F2937", gap: 4,
+    },
+    tipoBtnActive: { backgroundColor: "#F5C518", borderColor: "#F5C518" },
+    tipoBtnText: { color: "#6B7280", fontWeight: "bold", fontSize: 15 },
+    tipoBtnTextActive: { color: "#111827" },
+    tipoDesc: { color: "#4B5563", fontSize: 11 },
+    tipoDescActive: { color: "#374151" },
+
     form: {
-        backgroundColor: "#16213e",
-        borderRadius: 16,
-        padding: 24,
-        elevation: 8,
+        backgroundColor: "#1F2937", borderRadius: 20, padding: 24, elevation: 8,
     },
-    label: { color: "#ccc", fontSize: 13, marginBottom: 6, marginTop: 12, fontWeight: "600" },
+    label: { color: "#9CA3AF", fontSize: 13, fontWeight: "600", marginBottom: 6, marginTop: 14 },
     input: {
-        backgroundColor: "#0f3460",
-        color: "#fff",
-        borderRadius: 10,
-        paddingHorizontal: 14,
-        paddingVertical: 12,
-        fontSize: 15,
-        borderWidth: 1,
-        borderColor: "#1e4d8c",
+        backgroundColor: "#111827", color: "#fff",
+        borderRadius: 12, paddingHorizontal: 16, paddingVertical: 13,
+        fontSize: 15, borderWidth: 1, borderColor: "#374151",
     },
     btnCadastro: {
-        backgroundColor: "#F5C518",
-        borderRadius: 10,
-        paddingVertical: 14,
-        alignItems: "center",
-        marginTop: 24,
-        elevation: 5,
+        backgroundColor: "#F5C518", borderRadius: 12,
+        paddingVertical: 15, alignItems: "center", marginTop: 24, elevation: 6,
     },
-    btnCadastroText: { color: "#1a1a2e", fontWeight: "bold", fontSize: 16 },
-    linkText: { color: "#aaa", textAlign: "center", marginTop: 20, fontSize: 14 },
+    btnCadastroText: { color: "#111827", fontWeight: "bold", fontSize: 15 },
+    linkText: { color: "#6B7280", textAlign: "center", marginTop: 18, fontSize: 14 },
     linkDestaque: { color: "#F5C518", fontWeight: "bold" },
 });

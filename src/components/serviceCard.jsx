@@ -1,53 +1,50 @@
-// Card de serviço exibido na lista horizontal da Home
-// onSelect → salva o título do serviço selecionado no estado da Home
+// src/components/serviceCard.jsx
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
-import { View, Text, StyleSheet } from "react-native";
-import ServiceButton from "../components/serviceButton";
-
-export default function ServiceCard({ id, title, price, time, onSelect }) {
-
+export default function ServiceCard({ id, nome, preco, duracao, onSelect }) {
     return (
         <View style={styles.serviceCard}>
-            <Text style={[styles.text, styles.titleService]}>{title}</Text>
-            <Text style={[styles.text, styles.textInfo]}>💵 Preço: {price}</Text>
-            <Text style={[styles.text, styles.textInfo]}>⏱️ Tempo Aprox: {time}</Text>
-
-            {/* Passa o id e título para o botão navegar para agendamento */}
-            <ServiceButton
-                label="Agende agora!"
-                servicoId={id}
-                onPress={() => onSelect && onSelect(title)}
-            />
+            <Text style={styles.titleService}>{nome}</Text>
+            <Text style={styles.textInfo}>💵 Preço: R$ {preco}</Text>
+            <Text style={styles.textInfo}>⏱️ Tempo: {duracao} min</Text>
+            <TouchableOpacity style={styles.btn} onPress={onSelect} activeOpacity={0.8}>
+                <Text style={styles.btnText}>Agende agora!</Text>
+            </TouchableOpacity>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
     serviceCard: {
-        backgroundColor: "#6B7280",
-        padding: 10,
-        borderRadius: 10,
-        width: 200,
+        backgroundColor: "#1F2937",
+        padding: 14,
+        borderRadius: 14,
+        width: 180,
         marginRight: 10,
-        minHeight: 135,
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        elevation: 2,
-        flexDirection: "column",
         justifyContent: "space-between",
-        height: "100%"
-    },
-    text: {
-        color: "#FFFFFF",
+        borderWidth: 1,
+        borderColor: "#374151",
+        gap: 6,
     },
     titleService: {
-        fontSize: 20,
+        fontSize: 16,
         fontWeight: "bold",
-        textShadowColor: "rgba(0,0,0,0.3)",
-        textShadowOffset: { width: 0, height: 1 },
-        textShadowRadius: 2
+        color: "#fff",
     },
     textInfo: {
-        fontSize: 14,
-    }
+        fontSize: 13,
+        color: "#9CA3AF",
+    },
+    btn: {
+        backgroundColor: "#F5C518",
+        borderRadius: 8,
+        paddingVertical: 8,
+        alignItems: "center",
+        marginTop: 4,
+    },
+    btnText: {
+        color: "#111827",
+        fontWeight: "bold",
+        fontSize: 13,
+    },
 });

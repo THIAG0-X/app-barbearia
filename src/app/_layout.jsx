@@ -1,71 +1,57 @@
+// src/app/_layout.jsx
 import { Stack, usePathname, useRouter } from "expo-router";
 import { useColorScheme, View, StyleSheet } from "react-native";
-import { useEffect, createContext, useContext, useState } from "react";
+import { useEffect } from "react";
+import { AppProvider, useApp } from "../context/AppContext";
 import Header from "@/components/header";
 import Navbar from "@/components/navbar";
 
-// ─── Contexto de autenticação ────────────────────────────────────────────────
-// Permite que qualquer tela saiba se o usuário está logado
-// e possa chamar login() ou logout()
-export const AuthContext = createContext(null);
+const TELAS_PUBLICAS = ["/login", "/cadastro"];
 
-export function useAuth() {
-    return useContext(AuthContext);
-}
-// ─────────────────────────────────────────────────────────────────────────────
+// Guard interno — redireciona para login se não logado
+function AuthGuard({ children }) {
+    const { usuario } = useApp();
+    const pathname    = usePathname();
+    const router      = useRouter();
 
-// Telas que NÃO mostram Header e Navbar
-const TELAS_SEM_LAYOUT = ["/login", "/cadastro"];
-
-export default function Layout() {
-    const colorScheme = useColorScheme();
-    const bg = colorScheme === "dark" ? "#111827" : "#F0F0F0";
-
-    const pathname = usePathname();
-    const router = useRouter();
-    const esconderLayout = TELAS_SEM_LAYOUT.includes(pathname);
-
-    // false = não logado, true = logado
-    const [logado, setLogado] = useState(false);
-
-    // Redireciona para login se não estiver logado
     useEffect(() => {
-        if (!logado && !TELAS_SEM_LAYOUT.includes(pathname)) {
+        if (!usuario && !TELAS_PUBLICAS.includes(pathname)) {
             router.replace("/login");
         }
-    }, [logado]);
+    }, [usuario, pathname]);
 
-    const login = () => {
-        setLogado(true);
-        router.replace("/");
-    };
+    return children;
+}
 
-    const logout = () => {
-        setLogado(false);
-        router.replace("/login");
-    };
+function LayoutInner() {
+    const colorScheme = useColorScheme();
+    const bg          = colorScheme === "dark" ? "#111827" : "#111827"; // sempre escuro
+    const pathname    = usePathname();
+    const esconder    = TELAS_PUBLICAS.includes(pathname);
 
     return (
-        <AuthContext.Provider value={{ logado, login, logout }}>
-            <View style={[styles.wrapper, { backgroundColor: bg }]}>
+        <View style={[styles.wrapper, { backgroundColor: bg }]}>
+            {!esconder && <Header />}
+            <Stack screenOptions={{
+                headerShown: false,
+                animation: "slide_from_right",
+                contentStyle: { backgroundColor: bg },
+            }} />
+            {!esconder && <Navbar />}
+        </View>
+    );
+}
 
-                {!esconderLayout && <Header />}
-
-                <Stack screenOptions={{
-                    headerShown: false,
-                    animation: "slide_from_right",
-                    contentStyle: { backgroundColor: bg }
-                }} />
-
-                {!esconderLayout && <Navbar />}
-
-            </View>
-        </AuthContext.Provider>
+export default function Layout() {
+    return (
+        <AppProvider>
+            <AuthGuard>
+                <LayoutInner />
+            </AuthGuard>
+        </AppProvider>
     );
 }
 
 const styles = StyleSheet.create({
-    wrapper: {
-        flex: 1
-    }
+    wrapper: { flex: 1 },
 });

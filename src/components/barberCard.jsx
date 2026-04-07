@@ -1,50 +1,52 @@
-// Card do barbeiro exibido na lista horizontal da Home
-
-import { View, Text, StyleSheet } from "react-native";
+// src/components/barberCard.jsx
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-export default function BarberCard({name}){
-    return(
-        <View style = {styles.barberCard}>
-            <View style = {styles.avatar}>
-                <Ionicons name="person-outline" size={30} color="#fff"/>
+export default function BarberCard({ id, nome, especialidade, onPress }) {
+    return (
+        <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
+            <View style={styles.avatar}>
+                <Ionicons name="person" size={28} color="#F5C518" />
             </View>
-            <Text style = {styles.baberName}>{name}</Text>
-        </View>
-    )
+            <Text style={styles.nome}>{nome}</Text>
+            {especialidade && (
+                <Text style={styles.especialidade}>{especialidade}</Text>
+            )}
+        </TouchableOpacity>
+    );
 }
 
-const styles = StyleSheet.create ({
-    barberCard: {
-        backgroundColor: "#6B7280",
-        padding: 10,
-        borderRadius: 10,
-        width: 200,
+const styles = StyleSheet.create({
+    card: {
+        backgroundColor: "#1F2937",
+        padding: 14,
+        borderRadius: 14,
+        width: 130,
         marginRight: 10,
-        height: 135,
         alignItems: "center",
-        justifyContent: "center",
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        elevation: 2
+        gap: 6,
+        borderWidth: 1,
+        borderColor: "#374151",
     },
-
-    baberName: {
-        fontSize: 20,
+    avatar: {
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        backgroundColor: "#111827",
+        justifyContent: "center",
+        alignItems: "center",
+        borderWidth: 2,
+        borderColor: "#F5C518",
+    },
+    nome: {
+        color: "#fff",
         fontWeight: "bold",
-        color: "#FFFFFF",
-        marginTop: 5,
-        textShadowColor: "rgba(0,0,0,0.3)",
-        textShadowOffset: { width: 0, height: 1 },
-        textShadowRadius: 2
+        fontSize: 14,
+        textAlign: "center",
     },
-    avatar:{
-        width: 70,
-        height: 70,
-        borderRadius: 70,
-        backgroundColor: "#000000",
-        justifyContent: "center",
-        alignItems: "center"
-    }
-
-})
+    especialidade: {
+        color: "#6B7280",
+        fontSize: 11,
+        textAlign: "center",
+    },
+});
