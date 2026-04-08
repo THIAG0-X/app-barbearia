@@ -4,7 +4,6 @@
 
 ![React Native](https://img.shields.io/badge/React_Native-0.83.2-61DAFB?style=flat&logo=react)
 ![Expo](https://img.shields.io/badge/Expo-55.x-000020?style=flat&logo=expo)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.9.x-3178C6?style=flat&logo=typescript)
 ![Plataforma](https://img.shields.io/badge/Plataforma-Android%20%7C%20iOS%20%7C%20Web-green?style=flat)
 
 ---
