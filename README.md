@@ -3,6 +3,7 @@
 > Aplicativo mobile de agendamento e gestão para barbearias, desenvolvido com React Native e Expo.
 
 ![React Native](https://img.shields.io/badge/React_Native-0.83.2-61DAFB?style=flat&logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9.x-3178C6?style=flat&logo=typescript)
 ![Expo](https://img.shields.io/badge/Expo-55.x-000020?style=flat&logo=expo)
 ![Plataforma](https://img.shields.io/badge/Plataforma-Android%20%7C%20iOS%20%7C%20Web-green?style=flat)
 
@@ -404,12 +405,13 @@ Início do App
 
 ## 👨‍💻 Equipe
 
-| Nome | RA | Função |
+| Nome |
 |---|---|---|
-| [Nome do Integrante 1] |
-| [Nome do Integrante 2] | 
-| [Nome do Integrante 3] |
-| [Nome do Integrante 4] |
+| Thiago Malta Coutinho |
+| Pedro Henrique Pereira Carvalho | 
+| Arylon Rosa de Carvalho |
+| Edmilson de Oliveira Rodrigues |
+| Theo Rodrigues Craveiro Lima |
 
 > **Disciplina: DESENVOLVIMENTO DE APLICATIVOS MÓVEIS** 
 > **Professor: Marcelo Peratoni**
@@ -422,7 +424,3 @@ Início do App
 Este projeto foi desenvolvido exclusivamente para fins acadêmicos como parte da Atividade Prática Supervisionada (APS).
 
 ---
-
-<p align="center">
-  Desenvolvido por [Nome do Grupo] — BarberPro © 2025
-</p>
