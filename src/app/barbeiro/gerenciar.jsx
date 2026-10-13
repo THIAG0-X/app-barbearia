@@ -1,231 +1,259 @@
 // src/app/barbeiro/gerenciar.jsx  —  Gerenciar serviços e horários do Barbeiro
-import React, { useState } from "react";
-import {
-    View, Text, StyleSheet, ScrollView,
-    TouchableOpacity, TextInput, Alert, Switch,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { SERVICOS, HORARIOS_BASE } from "../../context/mockData";
+// Agora persiste no AgendaContext: o que o barbeiro altera vale para o app inteiro.
+import { colors } from '@/theme/colors';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Switch } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '@/hooks/useAuth';
+import { useAgenda } from '@/hooks/useAgenda';
+import { HORARIOS_BASE } from '@/data/mockData';
+import { showAlert } from '@/utils/alert';
 
 export default function Gerenciar() {
-    const [aba, setAba] = useState("servicos"); // "servicos" | "horarios"
+  const { usuario } = useAuth();
+  const { servicos, horariosDoBarbeiro, atualizarPreco, alternarServicoDoBarbeiro, salvarHorarios } =
+    useAgenda();
 
-    // Estado local de serviços (mockado — em produção viria do contexto/API)
-    const [servicos, setServicos] = useState(SERVICOS.map(s => ({ ...s, ativo: true })));
+  const [aba, setAba] = useState('servicos'); // "servicos" | "horarios"
+  const [horariosAtivos, setHorariosAtivos] = useState(() => new Set(horariosDoBarbeiro(usuario?.id)));
+  const [editando, setEditando] = useState(null); // id do serviço em edição
+  const [novoPreco, setNovoPreco] = useState('');
 
-    // Estado local de horários disponíveis
-    const [horariosAtivos, setHorariosAtivos] = useState(
-        HORARIOS_BASE.reduce((acc, h) => ({ ...acc, [h]: true }), {})
-    );
+  if (!usuario) return null;
 
-    // Edição de preço
-    const [editando, setEditando] = useState(null); // id do serviço sendo editado
-    const [novoPreco, setNovoPreco] = useState("");
+  const salvarPreco = (id) => {
+    const p = parseFloat(novoPreco.replace(',', '.'));
+    if (Number.isNaN(p) || p <= 0) {
+      showAlert('Erro', 'Preço inválido.');
+      return;
+    }
+    atualizarPreco(id, p);
+    setEditando(null);
+    showAlert('✅ Salvo', 'Preço atualizado com sucesso!');
+  };
 
-    const salvarPreco = (id) => {
-        const p = parseFloat(novoPreco);
-        if (isNaN(p) || p <= 0) { Alert.alert("Erro", "Preço inválido."); return; }
-        setServicos(prev => prev.map(s => s.id === id ? { ...s, preco: p } : s));
-        setEditando(null);
-        Alert.alert("✅ Salvo", "Preço atualizado com sucesso!");
-    };
+  const toggleHorario = (h) =>
+    setHorariosAtivos((prev) => {
+      const next = new Set(prev);
+      if (next.has(h)) next.delete(h);
+      else next.add(h);
+      return next;
+    });
 
-    const toggleServico = (id) => {
-        setServicos(prev => prev.map(s => s.id === id ? { ...s, ativo: !s.ativo } : s));
-    };
+  const handleSalvarHorarios = () => {
+    salvarHorarios(usuario.id, [...horariosAtivos]);
+    showAlert('✅ Salvo', 'Horários atualizados!');
+  };
 
-    const toggleHorario = (h) => {
-        setHorariosAtivos(prev => ({ ...prev, [h]: !prev[h] }));
-    };
+  return (
+    <View style={styles.container}>
+      <View style={styles.abas}>
+        <TouchableOpacity
+          style={[styles.aba, aba === 'servicos' && styles.abaActive]}
+          onPress={() => setAba('servicos')}
+        >
+          <Ionicons name="cut" size={16} color={aba === 'servicos' ? colors.bg : colors.textMuted} />
+          <Text style={[styles.abaText, aba === 'servicos' && styles.abaTextActive]}>Serviços</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.aba, aba === 'horarios' && styles.abaActive]}
+          onPress={() => setAba('horarios')}
+        >
+          <Ionicons name="time" size={16} color={aba === 'horarios' ? colors.bg : colors.textMuted} />
+          <Text style={[styles.abaText, aba === 'horarios' && styles.abaTextActive]}>Horários</Text>
+        </TouchableOpacity>
+      </View>
 
-    return (
-        <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.lista}>
+        {aba === 'servicos' && (
+          <>
+            <Text style={styles.hint}>
+              Ative os serviços que você realiza. O preço é compartilhado entre os barbeiros.
+            </Text>
+            {servicos.map((s) => {
+              const ativo = s.barbeiros.includes(usuario.id);
+              return (
+                <View key={s.id} style={[styles.card, !ativo && styles.cardInativo]}>
+                  <View style={styles.cardTop}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.servicoNome, !ativo && styles.textoInativo]}>{s.nome}</Text>
+                      <Text style={styles.servicoInfo}>⏱ {s.duracao} min</Text>
+                    </View>
+                    <Switch
+                      value={ativo}
+                      onValueChange={() => alternarServicoDoBarbeiro(s.id, usuario.id)}
+                      trackColor={{ false: colors.border, true: '#F5C51880' }}
+                      thumbColor={ativo ? colors.primary : colors.textMuted}
+                    />
+                  </View>
 
-            {/* Abas */}
-            <View style={styles.abas}>
-                <TouchableOpacity
-                    style={[styles.aba, aba === "servicos" && styles.abaActive]}
-                    onPress={() => setAba("servicos")}
-                >
-                    <Ionicons name="cut" size={16} color={aba === "servicos" ? "#111827" : "#6B7280"} />
-                    <Text style={[styles.abaText, aba === "servicos" && styles.abaTextActive]}>
-                        Serviços
-                    </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={[styles.aba, aba === "horarios" && styles.abaActive]}
-                    onPress={() => setAba("horarios")}
-                >
-                    <Ionicons name="time" size={16} color={aba === "horarios" ? "#111827" : "#6B7280"} />
-                    <Text style={[styles.abaText, aba === "horarios" && styles.abaTextActive]}>
-                        Horários
-                    </Text>
-                </TouchableOpacity>
+                  {editando === s.id ? (
+                    <View style={styles.editRow}>
+                      <TextInput
+                        style={styles.precoInput}
+                        value={novoPreco}
+                        onChangeText={setNovoPreco}
+                        keyboardType="numeric"
+                        placeholder="Novo preço"
+                        placeholderTextColor={colors.textFaint}
+                        autoFocus
+                      />
+                      <TouchableOpacity style={styles.btnSalvar} onPress={() => salvarPreco(s.id)}>
+                        <Text style={styles.btnSalvarText}>Salvar</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => setEditando(null)} style={styles.btnCancelar}>
+                        <Ionicons name="close" size={18} color={colors.textMuted} />
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <View style={styles.precoRow}>
+                      <Text style={styles.preco}>R$ {s.preco}</Text>
+                      <TouchableOpacity
+                        style={styles.btnEditar}
+                        onPress={() => {
+                          setEditando(s.id);
+                          setNovoPreco(String(s.preco));
+                        }}
+                        disabled={!ativo}
+                      >
+                        <Ionicons name="pencil" size={14} color={ativo ? colors.primary : colors.border} />
+                        <Text style={[styles.btnEditarText, !ativo && { color: colors.border }]}>
+                          Editar preço
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              );
+            })}
+          </>
+        )}
+
+        {aba === 'horarios' && (
+          <>
+            <Text style={styles.hint}>
+              Selecione os horários em que você está disponível para atendimento.
+            </Text>
+            <View style={styles.horariosGrid}>
+              {HORARIOS_BASE.map((h) => {
+                const ativo = horariosAtivos.has(h);
+                return (
+                  <TouchableOpacity
+                    key={h}
+                    style={[styles.horarioBtn, ativo && styles.horarioBtnActive]}
+                    onPress={() => toggleHorario(h)}
+                  >
+                    <Ionicons
+                      name={ativo ? 'checkmark-circle' : 'ellipse-outline'}
+                      size={14}
+                      color={ativo ? colors.bg : colors.textMuted}
+                    />
+                    <Text style={[styles.horarioBtnText, ativo && styles.horarioBtnTextActive]}>{h}</Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
 
-            <ScrollView contentContainerStyle={styles.lista}>
-
-                {/* ── Serviços ── */}
-                {aba === "servicos" && (
-                    <>
-                        <Text style={styles.hint}>Ative/desative serviços e edite os preços.</Text>
-                        {servicos.map(s => (
-                            <View key={s.id} style={[styles.card, !s.ativo && styles.cardInativo]}>
-                                <View style={styles.cardTop}>
-                                    <View style={{ flex: 1 }}>
-                                        <Text style={[styles.servicoNome, !s.ativo && styles.textoInativo]}>
-                                            {s.nome}
-                                        </Text>
-                                        <Text style={styles.servicoInfo}>⏱ {s.duracao} min</Text>
-                                    </View>
-                                    <Switch
-                                        value={s.ativo}
-                                        onValueChange={() => toggleServico(s.id)}
-                                        trackColor={{ false: "#374151", true: "#F5C51880" }}
-                                        thumbColor={s.ativo ? "#F5C518" : "#6B7280"}
-                                    />
-                                </View>
-
-                                {editando === s.id ? (
-                                    <View style={styles.editRow}>
-                                        <TextInput
-                                            style={styles.precoInput}
-                                            value={novoPreco}
-                                            onChangeText={setNovoPreco}
-                                            keyboardType="numeric"
-                                            placeholder="Novo preço"
-                                            placeholderTextColor="#4B5563"
-                                            autoFocus
-                                        />
-                                        <TouchableOpacity style={styles.btnSalvar} onPress={() => salvarPreco(s.id)}>
-                                            <Text style={styles.btnSalvarText}>Salvar</Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity onPress={() => setEditando(null)} style={styles.btnCancelar}>
-                                            <Ionicons name="close" size={18} color="#6B7280" />
-                                        </TouchableOpacity>
-                                    </View>
-                                ) : (
-                                    <View style={styles.precoRow}>
-                                        <Text style={styles.preco}>R$ {s.preco}</Text>
-                                        <TouchableOpacity
-                                            style={styles.btnEditar}
-                                            onPress={() => { setEditando(s.id); setNovoPreco(String(s.preco)); }}
-                                            disabled={!s.ativo}
-                                        >
-                                            <Ionicons name="pencil" size={14} color={s.ativo ? "#F5C518" : "#374151"} />
-                                            <Text style={[styles.btnEditarText, !s.ativo && { color: "#374151" }]}>
-                                                Editar preço
-                                            </Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                )}
-                            </View>
-                        ))}
-                    </>
-                )}
-
-                {/* ── Horários ── */}
-                {aba === "horarios" && (
-                    <>
-                        <Text style={styles.hint}>
-                            Selecione os horários em que você está disponível para atendimento.
-                        </Text>
-                        <View style={styles.horariosGrid}>
-                            {HORARIOS_BASE.map(h => {
-                                const ativo = horariosAtivos[h];
-                                return (
-                                    <TouchableOpacity
-                                        key={h}
-                                        style={[styles.horarioBtn, ativo && styles.horarioBtnActive]}
-                                        onPress={() => toggleHorario(h)}
-                                    >
-                                        <Ionicons
-                                            name={ativo ? "checkmark-circle" : "ellipse-outline"}
-                                            size={14}
-                                            color={ativo ? "#111827" : "#6B7280"}
-                                        />
-                                        <Text style={[styles.horarioBtnText, ativo && styles.horarioBtnTextActive]}>
-                                            {h}
-                                        </Text>
-                                    </TouchableOpacity>
-                                );
-                            })}
-                        </View>
-
-                        <TouchableOpacity
-                            style={styles.btnSalvarHorarios}
-                            onPress={() => Alert.alert("✅ Salvo", "Horários atualizados!")}
-                        >
-                            <Text style={styles.btnSalvarHorariosText}>Salvar horários</Text>
-                        </TouchableOpacity>
-                    </>
-                )}
-
-            </ScrollView>
-        </View>
-    );
+            <TouchableOpacity style={styles.btnSalvarHorarios} onPress={handleSalvarHorarios}>
+              <Text style={styles.btnSalvarHorariosText}>Salvar horários</Text>
+            </TouchableOpacity>
+          </>
+        )}
+      </ScrollView>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#111827" },
+  container: { flex: 1, backgroundColor: colors.bg },
 
-    abas: {
-        flexDirection: "row", margin: 16, gap: 10,
-        backgroundColor: "#1F2937", borderRadius: 14, padding: 4,
-    },
-    aba: {
-        flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center",
-        gap: 6, paddingVertical: 10, borderRadius: 10,
-    },
-    abaActive: { backgroundColor: "#F5C518" },
-    abaText:       { color: "#6B7280", fontWeight: "600", fontSize: 14 },
-    abaTextActive: { color: "#111827" },
+  abas: {
+    flexDirection: 'row',
+    margin: 16,
+    gap: 10,
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    padding: 4,
+  },
+  aba: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  abaActive: { backgroundColor: colors.primary },
+  abaText: { color: colors.textMuted, fontWeight: '600', fontSize: 14 },
+  abaTextActive: { color: colors.bg },
 
-    lista: { paddingHorizontal: 16, paddingBottom: 100, gap: 10 },
-    hint:  { color: "#6B7280", fontSize: 13, marginBottom: 4 },
+  lista: { paddingHorizontal: 16, paddingBottom: 24, gap: 10 },
+  hint: { color: colors.textMuted, fontSize: 13, marginBottom: 4 },
 
-    card: {
-        backgroundColor: "#1F2937", borderRadius: 14, padding: 14,
-        borderWidth: 1, borderColor: "#374151", gap: 10,
-    },
-    cardInativo: { opacity: 0.5 },
-    cardTop: { flexDirection: "row", alignItems: "center" },
-    servicoNome: { color: "#fff", fontWeight: "600", fontSize: 15 },
-    servicoInfo: { color: "#6B7280", fontSize: 12, marginTop: 2 },
-    textoInativo: { color: "#4B5563" },
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    gap: 10,
+  },
+  cardInativo: { opacity: 0.5 },
+  cardTop: { flexDirection: 'row', alignItems: 'center' },
+  servicoNome: { color: colors.white, fontWeight: '600', fontSize: 15 },
+  servicoInfo: { color: colors.textMuted, fontSize: 12, marginTop: 2 },
+  textoInativo: { color: colors.textFaint },
 
-    precoRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-    preco:    { color: "#F5C518", fontSize: 18, fontWeight: "bold" },
-    btnEditar: { flexDirection: "row", alignItems: "center", gap: 4 },
-    btnEditarText: { color: "#F5C518", fontSize: 13 },
+  precoRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  preco: { color: colors.primary, fontSize: 18, fontWeight: 'bold' },
+  btnEditar: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  btnEditarText: { color: colors.primary, fontSize: 13 },
 
-    editRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-    precoInput: {
-        flex: 1, backgroundColor: "#111827", color: "#fff",
-        borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8,
-        fontSize: 15, borderWidth: 1, borderColor: "#F5C518",
-    },
-    btnSalvar: {
-        backgroundColor: "#F5C518", borderRadius: 10,
-        paddingVertical: 8, paddingHorizontal: 14,
-    },
-    btnSalvarText: { color: "#111827", fontWeight: "bold", fontSize: 13 },
-    btnCancelar: { padding: 4 },
+  editRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  precoInput: {
+    flex: 1,
+    backgroundColor: colors.bg,
+    color: colors.white,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 15,
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+  btnSalvar: {
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+  },
+  btnSalvarText: { color: colors.bg, fontWeight: 'bold', fontSize: 13 },
+  btnCancelar: { padding: 4 },
 
-    horariosGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 8 },
-    horarioBtn: {
-        flexDirection: "row", alignItems: "center", gap: 6,
-        paddingVertical: 10, paddingHorizontal: 14,
-        borderRadius: 10, backgroundColor: "#1F2937",
-        borderWidth: 1.5, borderColor: "#374151",
-    },
-    horarioBtnActive: { backgroundColor: "#F5C518", borderColor: "#F5C518" },
-    horarioBtnText:       { color: "#6B7280", fontWeight: "600" },
-    horarioBtnTextActive: { color: "#111827" },
+  horariosGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 8 },
+  horarioBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    backgroundColor: colors.surface,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+  },
+  horarioBtnActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+  horarioBtnText: { color: colors.textMuted, fontWeight: '600' },
+  horarioBtnTextActive: { color: colors.bg },
 
-    btnSalvarHorarios: {
-        backgroundColor: "#F5C518", borderRadius: 12,
-        paddingVertical: 14, alignItems: "center", marginTop: 20, elevation: 4,
-    },
-    btnSalvarHorariosText: { color: "#111827", fontWeight: "bold", fontSize: 15 },
+  btnSalvarHorarios: {
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 20,
+    elevation: 4,
+  },
+  btnSalvarHorariosText: { color: colors.bg, fontWeight: 'bold', fontSize: 15 },
 });
